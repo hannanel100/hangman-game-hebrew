@@ -26,12 +26,12 @@ function startGame() {
   getWords();
 }
 async function getWords() {
-  loader.classList.toggle("lds-facebook");
+  loader.classList.add("lds-facebook");
   let englishWord = "";
   let hebWord = "";
   try {
     let response = await fetch(
-      "https://wordsapiv1.p.rapidapi.com/words/?random=true&frequencymin=6.5",
+      "https://wordsapiv1.p.rapidapi.com/words/?random=true&frequencymin=6.8",
       {
         method: "GET",
         headers: {
@@ -44,26 +44,30 @@ async function getWords() {
 
     let data = await response.json();
     englishWord = data.word;
+    console.log(response);
     //check if english word contains special characters
     if (
       englishWord.split(" ").length > 1 ||
-      englishWord.split("-").length > 1
+      englishWord.split("-").length > 1 ||
+      englishWord.split("#").length > 1 ||
+      englishWord.split("־").length > 1
     ) {
       getWords();
-    }
-
-    response = await fetch(
-      `https://api.mymemory.translated.net/get?q=${englishWord}&langpair=en|he&key=43a32cf91bd314360bee&de=hannanel100@gmail.com`
-    );
-    data = await response.json();
-    //check if word was translated
-    if (data.matches[0].segment === data.matches[0].translation) {
-      getWords();
     } else {
-      hebWord = data.responseData.translatedText;
-      selectedWord = hebWord.split(" ")[0];
-      loader.classList.toggle("lds-facebook");
-      displayWord();
+      response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${englishWord}&langpair=en|he&key=43a32cf91bd314360bee&de=hannanel100@gmail.com`
+      );
+      data = await response.json();
+      //check if word was translated
+      console.log(data);
+      if (data.matches[0].segment === data.matches[0].translation) {
+        getWords();
+      } else {
+        hebWord = data.responseData.translatedText;
+        selectedWord = hebWord.split(" ")[0];
+        loader.classList.remove("lds-facebook");
+        displayWord();
+      }
     }
   } catch (error) {
     console.error(error);
@@ -180,8 +184,11 @@ function updateTotalScore() {
 }
 //Keydown letter press
 window.addEventListener("keydown", (e) => {
+  console.log(e.code, e.key, e.keyCode);
   if (
     e.keyCode === 188 ||
+    e.keyCode === 186 ||
+    e.keyCode === 190 ||
     (e.keyCode >= 65 && e.keyCode <= 90 && e.keyCode !== 81 && e.keyCode !== 87)
   ) {
     const letter = e.key;
